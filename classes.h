@@ -6,10 +6,10 @@
 #include <mongo/client/dbclient.h>
 #include "money.h"
 
-#define DATE_FIELD "date"
-#define TYPE_FIELD "type"
-#define NAME_FIELD "name"
-#define AMOUNT_FIELD "amount"
+
+/******************************************************************
+DATE
+******************************************************************/
 
 class date {
     friend ostream& operator<<(ostream& output, const date& t);
@@ -21,8 +21,7 @@ class date {
 public:
 
     /* constructor from time_t */
-    date() {};
-    date(time_t t);
+    date(time_t t = std::time(NULL));
     
     time_t time() const { return _time; }
     int day() const { return _tm.tm_mday; }
@@ -30,32 +29,49 @@ public:
     int year() const { return _tm.tm_year + 1900; }
 };
 
+/******************************************************************
+TRANSACTION
+******************************************************************/
+
+#define DATE_FIELD "date"
+#define TYPE_FIELD "type"
+#define NAME_FIELD "name"
+#define AMOUNT_FIELD "amount"
+
 enum trans_t { ATM, DEBIT, CREDIT };
 
 class transaction {
    friend ostream& operator<<(ostream& output, const transaction& t);
     
-    date _date;
-    trans_t _type;
-    string _name;
-    usd _amount;
+    mongo::OID __id;
+    
+/* attributes */
+public:
+    date occurred;
+    trans_t type;
+    string name;
+    usd amount;
     
 public: 
-
-    /* constructor from BSON obj */
+    transaction() {}
     transaction(mongo::BSONObj obj);
 
+    /* static methods */
     static vector<transaction> all();
     static date latest();
     
     
-    
 /* accessors */
 public:
-    date occurred() const { return _date; }
-    trans_t type() const { return _type; }
-    string name() const { return _name; }
-    usd amount() const { return _amount; }
+    mongo::OID _id() const { return __id; }
     
+/* general instance methods */
+public:
+    bool has_id() const { return __id.isSet(); }
+    bool save();
+
+private:
+    bool update();
+    bool insert();
     
 };

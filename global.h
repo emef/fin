@@ -12,5 +12,5 @@
 EXTERN mongo::DBClientConnection db;
 
 /* global collection names */
-#define DB_TRANSACTION "fin.transactions"
+#define DB_TRANSACTIONS "fin.transactions"
 
